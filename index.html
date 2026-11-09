@@ -1,0 +1,1279 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>منصة الكفايات اللغوية الشاملة | أ. حسنه العلوي</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        royal: {
+                            navy: '#0B192C',
+                            darkBlue: '#1E3E62',
+                            gold: '#D4AF37',
+                            lightGold: '#F3C623',
+                            cream: '#F9F8F6',
+                            cardDark: '#15243B'
+                        }
+                    },
+                    fontFamily: {
+                        tajawal: ['Tajawal', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Google Fonts: Tajawal -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;900&display=swap" rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Canvas Confetti for Gamification -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+    <style>
+        body {
+            font-family: 'Tajawal', sans-serif;
+            transition: background-color 0.3s, color 0.3s;
+        }
+        .gold-gradient-text {
+            background: linear-gradient(135deg, #D4AF37 0%, #F3C623 50%, #AA7C11 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .gold-border {
+            border-color: #D4AF37;
+        }
+        .gold-bg-gradient {
+            background: linear-gradient(135deg, #D4AF37 0%, #F3C623 100%);
+        }
+        .navy-gradient {
+            background: linear-gradient(135deg, #0B192C 0%, #1E3E62 100%);
+        }
+        .custom-shadow {
+            box-shadow: 0 10px 30px -10px rgba(212, 175, 55, 0.2);
+        }
+        .draggable-item {
+            cursor: grab;
+            user-select: none;
+        }
+        .draggable-item:active {
+            cursor: grabbing;
+        }
+        .drop-zone {
+            transition: all 0.2s ease-in-out;
+        }
+        .drop-zone.drag-over {
+            border-color: #F3C623;
+            background-color: rgba(212, 175, 55, 0.15);
+            transform: scale(1.02);
+        }
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0B192C;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #D4AF37;
+            border-radius: 4px;
+        }
+        /* Print styling for Report */
+        @media print {
+            body * {
+                visibility: hidden;
+            }
+            #printable-report, #printable-report * {
+                visibility: visible;
+            }
+            #printable-report {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 100%;
+                background: white !important;
+                color: black !important;
+                padding: 20px;
+                box-shadow: none !important;
+            }
+            .no-print {
+                display: none !important;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-100 dark:bg-royal-navy text-gray-800 dark:text-gray-100 min-h-screen flex flex-col selection:bg-royal-gold selection:text-royal-navy">
+
+    <!-- Header / Navbar Section -->
+    <header class="sticky top-0 z-50 bg-white/90 dark:bg-royal-navy/90 backdrop-blur-md border-b-2 border-royal-gold/30 shadow-lg">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
+            <div class="flex flex-col md:flex-row items-center justify-between gap-4">
+                
+                <!-- School & Teacher Info -->
+                <div class="flex items-center gap-3">
+                    <div class="w-12 h-12 rounded-full gold-bg-gradient flex items-center justify-center text-royal-navy font-bold text-2xl shadow-md border-2 border-white">
+                        <i class="fa-solid fa-crown"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-xl sm:text-2xl font-black text-royal-darkBlue dark:text-royal-gold leading-tight">
+                            منصة الكفايات اللغوية الشاملة
+                        </h1>
+                        <p class="text-xs sm:text-sm font-semibold text-gray-600 dark:text-gray-300">
+                            إعداد المعلمة: <span class="text-royal-gold font-bold">حسنه العلوي</span> | 
+                            <span class="text-gray-500 dark:text-gray-400">الثانوية التاسعة والعشرون</span>
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Score & Progress Controls -->
+                <div class="flex items-center gap-4 w-full md:w-auto justify-between md:justify-end">
+                    
+                    <!-- Points Display -->
+                    <div class="flex items-center gap-2 bg-royal-darkBlue/10 dark:bg-royal-cardDark px-4 py-2 rounded-xl border border-royal-gold/40 shadow-inner">
+                        <i class="fa-solid fa-trophy text-royal-gold text-lg animate-bounce"></i>
+                        <div class="text-right">
+                            <div class="text-xs text-gray-500 dark:text-gray-400 font-medium">النقاط الكلية</div>
+                            <span id="score-counter" class="text-lg font-black text-royal-gold">0</span> <span class="text-xs text-royal-gold">نقطة</span>
+                        </div>
+                    </div>
+
+                    <!-- Mode Toggle -->
+                    <button id="theme-toggle" class="p-2.5 rounded-xl border border-royal-gold/40 bg-gray-200 dark:bg-royal-cardDark text-royal-gold hover:scale-105 transition-all">
+                        <i id="theme-icon" class="fa-solid fa-moon text-lg"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Overall Course Progress Bar -->
+            <div class="mt-3">
+                <div class="flex justify-between items-center text-xs font-bold text-gray-600 dark:text-gray-300 mb-1">
+                    <span><i class="fa-solid fa-chart-line text-royal-gold ml-1"></i> الإنجاز في الكفاية اللغوية</span>
+                    <span id="progress-percentage" class="text-royal-gold font-black">0%</span>
+                </div>
+                <div class="w-full bg-gray-300 dark:bg-gray-700 h-2.5 rounded-full overflow-hidden p-0.5 border border-royal-gold/30">
+                    <div id="overall-progress" class="gold-bg-gradient h-full rounded-full transition-all duration-500" style="width: 0%"></div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Navigation Tabs -->
+    <nav class="bg-royal-darkBlue dark:bg-royal-cardDark text-white shadow-xl no-print border-b border-royal-gold/20">
+        <div class="max-w-7xl mx-auto px-2 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-start sm:justify-center overflow-x-auto py-2 gap-1 sm:gap-2 no-scrollbar">
+                <button onclick="switchTab('section1')" id="tab-section1" class="tab-btn px-4 py-2 rounded-lg font-bold text-sm whitespace-nowrap transition-all flex items-center gap-2 bg-royal-gold text-royal-navy shadow-md">
+                    <i class="fa-solid fa-cards-blank"></i> 1. الفنون التعبيرية
+                </button>
+                <button onclick="switchTab('section2')" id="tab-section2" class="tab-btn px-4 py-2 rounded-lg font-bold text-sm whitespace-nowrap transition-all flex items-center gap-2 hover:bg-white/10">
+                    <i class="fa-solid fa-bullseye"></i> 2. أهداف الكتابة
+                </button>
+                <button onclick="switchTab('section3')" id="tab-section3" class="tab-btn px-4 py-2 rounded-lg font-bold text-sm whitespace-nowrap transition-all flex items-center gap-2 hover:bg-white/10">
+                    <i class="fa-solid fa-futbol"></i> 3. مدير النادي
+                </button>
+                <button onclick="switchTab('section4')" id="tab-section4" class="tab-btn px-4 py-2 rounded-lg font-bold text-sm whitespace-nowrap transition-all flex items-center gap-2 hover:bg-white/10">
+                    <i class="fa-solid fa-magnifying-glass"></i> 4. اختبار المصادر
+                </button>
+                <button onclick="switchTab('section5')" id="tab-section5" class="tab-btn px-4 py-2 rounded-lg font-bold text-sm whitespace-nowrap transition-all flex items-center gap-2 hover:bg-white/10">
+                    <i class="fa-solid fa-file-pen"></i> 5. تقرير المقصف
+                </button>
+                <button onclick="switchTab('section6')" id="tab-section6" class="tab-btn px-4 py-2 rounded-lg font-bold text-sm whitespace-nowrap transition-all flex items-center gap-2 hover:bg-white/10">
+                    <i class="fa-solid fa-sitemap"></i> 6. خطوات الموضوع
+                </button>
+                <button onclick="switchTab('badges')" id="tab-badges" class="tab-btn px-4 py-2 rounded-lg font-bold text-sm whitespace-nowrap transition-all flex items-center gap-2 hover:bg-white/10 text-royal-gold">
+                    <i class="fa-solid fa-award"></i> الأوسمة
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content Container -->
+    <main class="flex-grow max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8">
+
+        <!-- SECTION 1: Expression Arts Matching -->
+        <section id="section1" class="tab-content block space-y-6">
+            <div class="bg-white dark:bg-royal-cardDark rounded-2xl p-6 shadow-xl border border-royal-gold/30">
+                <div class="border-b border-gray-200 dark:border-gray-700 pb-4 mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+                    <div>
+                        <h2 class="text-2xl font-black text-royal-darkBlue dark:text-royal-gold flex items-center gap-2">
+                            <i class="fa-solid fa-shapes text-royal-gold"></i> القسم الأول: ربط الفن التعبيري بالموضوع المناسب
+                        </h2>
+                        <p class="text-sm text-gray-600 dark:text-gray-300 mt-1">لكل موضوع فن تعبيري يناسبه، قم بسحب الفن التعبيري المناسب وأسقطه في المكان المخصص للموضوع.</p>
+                    </div>
+                    <button onclick="resetSection1()" class="px-3 py-1.5 bg-gray-200 dark:bg-gray-700 text-xs font-bold rounded-lg hover:bg-gray-300 transition">
+                        <i class="fa-solid fa-rotate-right ml-1"></i> إعادة المحاولة
+                    </button>
+                </div>
+
+                <!-- Draggable Items Container -->
+                <div class="mb-8 p-4 bg-gray-50 dark:bg-royal-navy/60 rounded-xl border-2 border-dashed border-royal-gold/40">
+                    <h3 class="text-sm font-bold text-royal-gold mb-3 flex items-center gap-2">
+                        <i class="fa-solid fa-hand-pointer"></i> الخيارات المتاحة (اسحب من هنا):
+                    </h3>
+                    <div id="arts-source" class="flex flex-wrap gap-3 min-h-[50px] items-center">
+                        <div draggable="true" ondragstart="drag(event)" id="art-1" class="draggable-item bg-royal-darkBlue text-royal-gold px-4 py-2.5 rounded-xl font-bold shadow-md hover:scale-105 border border-royal-gold/40 flex items-center gap-2">
+                            <i class="fa-solid fa-book-bookmark"></i> المذكرات الأدبية
+                        </div>
+                        <div draggable="true" ondragstart="drag(event)" id="art-2" class="draggable-item bg-royal-darkBlue text-royal-gold px-4 py-2.5 rounded-xl font-bold shadow-md hover:scale-105 border border-royal-gold/40 flex items-center gap-2">
+                            <i class="fa-solid fa-newspaper"></i> التحقيق الصحفي
+                        </div>
+                        <div draggable="true" ondragstart="drag(event)" id="art-3" class="draggable-item bg-royal-darkBlue text-royal-gold px-4 py-2.5 rounded-xl font-bold shadow-md hover:scale-105 border border-royal-gold/40 flex items-center gap-2">
+                            <i class="fa-solid fa-feather-pointed"></i> القصة القصيرة / المقالة الأدبية
+                        </div>
+                        <div draggable="true" ondragstart="drag(event)" id="art-4" class="draggable-item bg-royal-darkBlue text-royal-gold px-4 py-2.5 rounded-xl font-bold shadow-md hover:scale-105 border border-royal-gold/40 flex items-center gap-2">
+                            <i class="fa-solid fa-flask"></i> المقالة العلمية والتوعوية
+                        </div>
+                        <div draggable="true" ondragstart="drag(event)" id="art-5" class="draggable-item bg-royal-darkBlue text-royal-gold px-4 py-2.5 rounded-xl font-bold shadow-md hover:scale-105 border border-royal-gold/40 flex items-center gap-2">
+                            <i class="fa-solid fa-envelope-open-text"></i> الرسالة الإدارية (الطلب)
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Drop Targets List -->
+                <div class="space-y-4">
+                    <!-- Row 1 -->
+                    <div class="flex flex-col md:flex-row items-stretch gap-4 p-4 rounded-xl bg-gray-50 dark:bg-royal-navy/40 border border-gray-200 dark:border-gray-700">
+                        <div class="md:w-1/3 flex items-center justify-center p-3 rounded-lg border-2 border-dashed border-gray-300 dark:border-gray-600 drop-zone bg-white dark:bg-royal-cardDark min-h-[60px]"
+                             ondrop="drop(event, 'art-1')" ondragover="allowDrop(event)">
+                            <span class="text-xs text-gray-400 font-bold pointer-events-none">أسقط الفن التعبيري المناسب هنا</span>
+                        </div>
+                        <div class="md:w-2/3 flex items-center gap-3">
+                            <span class="w-8 h-8 rounded-full gold-bg-gradient text-royal-navy font-black flex items-center justify-center shrink-0">1</span>
+                            <p class="text-sm font-semibold leading-relaxed">نقل تجربة شخصية عايشها الكاتب في مرحلة من مراحله العمرية.</p>
+                        </div>
+                    </div>
+                    <!-- Row 2 -->
+                    <div class="flex flex-col md:flex-row items-stretch gap-4 p-4 rounded-xl bg-gray-50 dark:bg-royal-navy/40 border border-gray-200 dark:border-gray-700">
+                        <div class="md:w-1/3 flex items-center justify-center p-3 rounded-lg border-2 border-dashed border-gray-300 dark:border-gray-600 drop-zone bg-white dark:bg-royal-cardDark min-h-[60px]"
+                             ondrop="drop(event, 'art-2')" ondragover="allowDrop(event)">
+                            <span class="text-xs text-gray-400 font-bold pointer-events-none">أسقط الفن التعبيري المناسب هنا</span>
+                        </div>
+                        <div class="md:w-2/3 flex items-center gap-3">
+                            <span class="w-8 h-8 rounded-full gold-bg-gradient text-royal-navy font-black flex items-center justify-center shrink-0">2</span>
+                            <p class="text-sm font-semibold leading-relaxed">رصد آراء الشباب وأولياء الأمور والمثقفين ورجال الأمن حول مواقع التواصل الاجتماعي.</p>
+                        </div>
+                    </div>
+                    <!-- Row 3 -->
+                    <div class="flex flex-col md:flex-row items-stretch gap-4 p-4 rounded-xl bg-gray-50 dark:bg-royal-navy/40 border border-gray-200 dark:border-gray-700">
+                        <div class="md:w-1/3 flex items-center justify-center p-3 rounded-lg border-2 border-dashed border-gray-300 dark:border-gray-600 drop-zone bg-white dark:bg-royal-cardDark min-h-[60px]"
+                             ondrop="drop(event, 'art-3')" ondragover="allowDrop(event)">
+                            <span class="text-xs text-gray-400 font-bold pointer-events-none">أسقط الفن التعبيري المناسب هنا</span>
+                        </div>
+                        <div class="md:w-2/3 flex items-center gap-3">
+                            <span class="w-8 h-8 rounded-full gold-bg-gradient text-royal-navy font-black flex items-center justify-center shrink-0">3</span>
+                            <p class="text-sm font-semibold leading-relaxed">تصوير الانفعالات النفسية والأحداث المؤلمة التي يمر بها أحد الآباء الذين أودعهم أبناؤهم دار المسنين.</p>
+                        </div>
+                    </div>
+                    <!-- Row 4 -->
+                    <div class="flex flex-col md:flex-row items-stretch gap-4 p-4 rounded-xl bg-gray-50 dark:bg-royal-navy/40 border border-gray-200 dark:border-gray-700">
+                        <div class="md:w-1/3 flex items-center justify-center p-3 rounded-lg border-2 border-dashed border-gray-300 dark:border-gray-600 drop-zone bg-white dark:bg-royal-cardDark min-h-[60px]"
+                             ondrop="drop(event, 'art-4')" ondragover="allowDrop(event)">
+                            <span class="text-xs text-gray-400 font-bold pointer-events-none">أسقط الفن التعبيري المناسب هنا</span>
+                        </div>
+                        <div class="md:w-2/3 flex items-center gap-3">
+                            <span class="w-8 h-8 rounded-full gold-bg-gradient text-royal-navy font-black flex items-center justify-center shrink-0">4</span>
+                            <p class="text-sm font-semibold leading-relaxed">تصويب أخطاء شائعة في حفظ الأطعمة يقع فيها عامة الناس.</p>
+                        </div>
+                    </div>
+                    <!-- Row 5 -->
+                    <div class="flex flex-col md:flex-row items-stretch gap-4 p-4 rounded-xl bg-gray-50 dark:bg-royal-navy/40 border border-gray-200 dark:border-gray-700">
+                        <div class="md:w-1/3 flex items-center justify-center p-3 rounded-lg border-2 border-dashed border-gray-300 dark:border-gray-600 drop-zone bg-white dark:bg-royal-cardDark min-h-[60px]"
+                             ondrop="drop(event, 'art-5')" ondragover="allowDrop(event)">
+                            <span class="text-xs text-gray-400 font-bold pointer-events-none">أسقط الفن التعبيري المناسب هنا</span>
+                        </div>
+                        <div class="md:w-2/3 flex items-center gap-3">
+                            <span class="w-8 h-8 rounded-full gold-bg-gradient text-royal-navy font-black flex items-center justify-center shrink-0">5</span>
+                            <p class="text-sm font-semibold leading-relaxed">إبداء الرغبة في الالتحاق بوظيفة أعلنت عنها إحدى الشركات.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Check Button & Hint -->
+                <div class="mt-6 flex flex-wrap justify-between items-center gap-4">
+                    <button onclick="checkSection1()" class="px-6 py-3 gold-bg-gradient text-royal-navy font-black rounded-xl shadow-lg hover:brightness-110 transition flex items-center gap-2">
+                        <i class="fa-solid fa-check-double"></i> التحقق من التوصيل والتصحيح
+                    </button>
+                    <div id="section1-feedback" class="text-sm font-bold text-royal-gold"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 2: Writing Goals Matrix -->
+        <section id="section2" class="tab-content hidden space-y-6">
+            <div class="bg-white dark:bg-royal-cardDark rounded-2xl p-6 shadow-xl border border-royal-gold/30">
+                <div class="border-b border-gray-200 dark:border-gray-700 pb-4 mb-6">
+                    <h2 class="text-2xl font-black text-royal-darkBlue dark:text-royal-gold flex items-center gap-2">
+                        <i class="fa-solid fa-bullseye text-royal-gold"></i> القسم الثاني: مصفوفة أهداف الكتابة والتصنيف الأدبي/العلمي
+                    </h2>
+                    <p class="text-sm text-gray-600 dark:text-gray-300 mt-1">أهداف الكتابة مختلفة بحسب الموضوع والمستهدفين. حدد هدفك والتصنيف المناسب للموضوعات الواردة في النشاط (صفحة 2).</p>
+                </div>
+
+                <div class="grid grid-cols-1 gap-6">
+                    <!-- Item 1 -->
+                    <div class="p-5 rounded-2xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-royal-navy/40 space-y-3">
+                        <div class="flex items-center gap-3">
+                            <span class="w-8 h-8 rounded-full gold-bg-gradient text-royal-navy font-black flex items-center justify-center">1</span>
+                            <h3 class="font-bold text-lg text-royal-darkBlue dark:text-royal-gold">تقرير إلى وزير التعليم عن أوضاع مدرستك</h3>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-1">اختر الهدف الرئيسي من الكتابة:</label>
+                                <select id="sec2-goal-1" class="w-full p-3 rounded-xl border border-royal-gold/40 bg-white dark:bg-royal-navy text-sm font-semibold focus:ring-2 focus:ring-royal-gold">
+                                    <option value="">-- اختر الهدف --</option>
+                                    <option value="right">توضيح حقائق ومعالجة أوضاع المدرسة وإحاطة المسؤول بالمتطلبات والاحتياجات</option>
+                                    <option value="wrong1">التعبير عن المشاعر العاطفية والتأملات الشخصية</option>
+                                    <option value="wrong2">التسلية والترفيه وإبراز المهارات البلاغية والقصصية</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-1">تصنيف نوع الكتابة:</label>
+                                <select id="sec2-type-1" class="w-full p-3 rounded-xl border border-royal-gold/40 bg-white dark:bg-royal-navy text-sm font-semibold focus:ring-2 focus:ring-royal-gold">
+                                    <option value="">-- اختر التصنيف --</option>
+                                    <option value="right">كتابة وظيفية / إدارية (معالجة معلومات)</option>
+                                    <option value="wrong">كتابة أدبية وجدانية</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Item 2 -->
+                    <div class="p-5 rounded-2xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-royal-navy/40 space-y-3">
+                        <div class="flex items-center gap-3">
+                            <span class="w-8 h-8 rounded-full gold-bg-gradient text-royal-navy font-black flex items-center justify-center">2</span>
+                            <h3 class="font-bold text-lg text-royal-darkBlue dark:text-royal-gold">رسالة إلى معلمي</h3>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-1">اختر الهدف الرئيسي من الكتابة:</label>
+                                <select id="sec2-goal-2" class="w-full p-3 rounded-xl border border-royal-gold/40 bg-white dark:bg-royal-navy text-sm font-semibold focus:ring-2 focus:ring-royal-gold">
+                                    <option value="">-- اختر الهدف --</option>
+                                    <option value="right">إنشاء علاقات اجتماعية والتعبير عن التقدير والامتنان والمودة</option>
+                                    <option value="wrong1">نقد المناهج واستعراض المعلومات العلمية والمعادلات</option>
+                                    <option value="wrong2">المطالبة بالتحقيق في موضوع إداري</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-1">تصنيف نوع الكتابة:</label>
+                                <select id="sec2-type-2" class="w-full p-3 rounded-xl border border-royal-gold/40 bg-white dark:bg-royal-navy text-sm font-semibold focus:ring-2 focus:ring-royal-gold">
+                                    <option value="">-- اختر التصنيف --</option>
+                                    <option value="right">كتابة تواصلية / إخوانية (إنشاء علاقات)</option>
+                                    <option value="wrong">كتابة علمية بحتة</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Item 3 -->
+                    <div class="p-5 rounded-2xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-royal-navy/40 space-y-3">
+                        <div class="flex items-center gap-3">
+                            <span class="w-8 h-8 rounded-full gold-bg-gradient text-royal-navy font-black flex items-center justify-center">3</span>
+                            <h3 class="font-bold text-lg text-royal-darkBlue dark:text-royal-gold">قصة قصيرة بعنوان (نهاية مدمن)</h3>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-1">اختر الهدف الرئيسي من الكتابة:</label>
+                                <select id="sec2-goal-3" class="w-full p-3 rounded-xl border border-royal-gold/40 bg-white dark:bg-royal-navy text-sm font-semibold focus:ring-2 focus:ring-royal-gold">
+                                    <option value="">-- اختر الهدف --</option>
+                                    <option value="right">التعبير عن الذات والعاطفة والوعظ والعبرة والتأثير النفسي في القراء</option>
+                                    <option value="wrong1">إعطاء تعليمات وإرشادات طبية لعلاج الإدمان</option>
+                                    <option value="wrong2">رفع شكوى رسمية للجهات الأمنية</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-1">تصنيف نوع الكتابة:</label>
+                                <select id="sec2-type-3" class="w-full p-3 rounded-xl border border-royal-gold/40 bg-white dark:bg-royal-navy text-sm font-semibold focus:ring-2 focus:ring-royal-gold">
+                                    <option value="">-- اختر التصنيف --</option>
+                                    <option value="right">كتابة أدبية (تعبير عن العاطفة والذات)</option>
+                                    <option value="wrong">كتابة تقرير رسمية</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Item 4 -->
+                    <div class="p-5 rounded-2xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-royal-navy/40 space-y-3">
+                        <div class="flex items-center gap-3">
+                            <span class="w-8 h-8 rounded-full gold-bg-gradient text-royal-navy font-black flex items-center justify-center">4</span>
+                            <h3 class="font-bold text-lg text-royal-darkBlue dark:text-royal-gold">مقالة عن الآثار السلبية لإدمان الشبكة العالمية</h3>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-1">اختر الهدف الرئيسي من الكتابة:</label>
+                                <select id="sec2-goal-4" class="w-full p-3 rounded-xl border border-royal-gold/40 bg-white dark:bg-royal-navy text-sm font-semibold focus:ring-2 focus:ring-royal-gold">
+                                    <option value="">-- اختر الهدف --</option>
+                                    <option value="right">التوعية الاجتماعية وإضافة ومعالجة معلومات وتوضيح الأضرار بحقائق وأدلة</option>
+                                    <option value="wrong1">سرد ذكريات شخصية طريفة</option>
+                                    <option value="wrong2">بيع أجهزة إنترنت جديدة</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-1">تصنيف نوع الكتابة:</label>
+                                <select id="sec2-type-4" class="w-full p-3 rounded-xl border border-royal-gold/40 bg-white dark:bg-royal-navy text-sm font-semibold focus:ring-2 focus:ring-royal-gold">
+                                    <option value="">-- اختر التصنيف --</option>
+                                    <option value="right">كتابة موضوعية / معالجة معلومات وتحليل</option>
+                                    <option value="wrong">شعر وجداني</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Item 5 -->
+                    <div class="p-5 rounded-2xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-royal-navy/40 space-y-3">
+                        <div class="flex items-center gap-3">
+                            <span class="w-8 h-8 rounded-full gold-bg-gradient text-royal-navy font-black flex items-center justify-center">5</span>
+                            <h3 class="font-bold text-lg text-royal-darkBlue dark:text-royal-gold">كتاب عن طاعة ولي الأمر في الإسلام</h3>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-1">اختر الهدف الرئيسي من الكتابة:</label>
+                                <select id="sec2-goal-5" class="w-full p-3 rounded-xl border border-royal-gold/40 bg-white dark:bg-royal-navy text-sm font-semibold focus:ring-2 focus:ring-royal-gold">
+                                    <option value="">-- اختر الهدف --</option>
+                                    <option value="right">توضيح الأحكام الشرعية وإضافة معلومات ودعم الثوابت الوطنية والدينية والإقناع</option>
+                                    <option value="wrong1">الاستمتاع بالفن التعبيري الخيالي</option>
+                                    <option value="wrong2">التحقيق في المشكلات المالية</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-1">تصنيف نوع الكتابة:</label>
+                                <select id="sec2-type-5" class="w-full p-3 rounded-xl border border-royal-gold/40 bg-white dark:bg-royal-navy text-sm font-semibold focus:ring-2 focus:ring-royal-gold">
+                                    <option value="">-- اختر التصنيف --</option>
+                                    <option value="right">كتابة شرعية / توثيق ومعالجة معلومات</option>
+                                    <option value="wrong">رواية أدبية</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-6 flex justify-between items-center">
+                    <button onclick="checkSection2()" class="px-6 py-3 gold-bg-gradient text-royal-navy font-black rounded-xl shadow-lg hover:brightness-110 transition">
+                        <i class="fa-solid fa-square-check"></i> اعتماد وتقييم الأهداف
+                    </button>
+                    <div id="section2-feedback" class="text-sm font-bold text-royal-gold"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 3: Club Manager Simulator Game -->
+        <section id="section3" class="tab-content hidden space-y-6">
+            <div class="bg-white dark:bg-royal-cardDark rounded-2xl p-6 shadow-xl border border-royal-gold/30">
+                <div class="border-b border-gray-200 dark:border-gray-700 pb-4 mb-6">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-full gold-bg-gradient text-royal-navy flex items-center justify-center font-bold text-xl">
+                            <i class="fa-solid fa-user-tie"></i>
+                        </div>
+                        <div>
+                            <h2 class="text-2xl font-black text-royal-darkBlue dark:text-royal-gold">
+                                القسم الثالث: محاكي دور "مدير النادي الرياضي" (جمع وتصنيف المعلومات)
+                            </h2>
+                            <p class="text-sm text-gray-600 dark:text-gray-300 mt-0.5">
+                                عُينتِ مديراً للنادي الرياضي! عليكِ جمع المعلومات وتحديد المصدر المناسب لكل نوع من المعلومات لاستكشاف النادي بنجاح.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+                    <!-- Info Category 1 -->
+                    <div class="p-5 rounded-2xl border-2 border-royal-gold/30 bg-gray-50 dark:bg-royal-navy/50 space-y-3">
+                        <div class="flex items-center gap-2 text-royal-gold font-bold">
+                            <i class="fa-solid fa-history text-lg"></i>
+                            <h4>1. معلومات عن: (تاريخ النادي ورؤساؤه وبطولاته)</h4>
+                        </div>
+                        <div class="bg-white dark:bg-royal-cardDark p-3 rounded-xl text-xs leading-relaxed border border-gray-200 dark:border-gray-700">
+                            <strong>المعلومات المطلوب جمعها:</strong> متى أسس؟ رؤساؤه السابقون - بطولاته الداخلية والخارجية - نشاطاته الرياضية - أشهر لاعبيه ومدربيه - أهم مشكلاته السابقة.
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-1">اختر المصدر الأكثر ملاءمة لجمع هذه المعلومات:</label>
+                            <select id="club-src-1" class="w-full p-2.5 rounded-xl border border-royal-gold/40 bg-white dark:bg-royal-navy text-xs font-bold">
+                                <option value="">-- حدد مصدر المعلومة --</option>
+                                <option value="correct">وثائق النادي وسجلاته ومنشوراته وما كتب عنه في الصحف والمجلات</option>
+                                <option value="wrong1">مشاهدة تدريبات الفئات السنية فقط</option>
+                                <option value="wrong2">مقابلة مدرب الحراس الحالي</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Info Category 2 -->
+                    <div class="p-5 rounded-2xl border-2 border-royal-gold/30 bg-gray-50 dark:bg-royal-navy/50 space-y-3">
+                        <div class="flex items-center gap-2 text-royal-gold font-bold">
+                            <i class="fa-solid fa-sitemap text-lg"></i>
+                            <h4>2. معلومات عن: (الهيكل الإداري والمشكلات السابقة)</h4>
+                        </div>
+                        <div class="bg-white dark:bg-royal-cardDark p-3 rounded-xl text-xs leading-relaxed border border-gray-200 dark:border-gray-700">
+                            <strong>المعلومات المطلوب جمعها:</strong> التعرف على القيادات السابقة، الأزمات الإدارية القديمة، والتسلسل التاريخي لقرارات النادي.
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-1">اختر المصدر الأكثر ملاءمة لجمع هذه المعلومات:</label>
+                            <select id="club-src-2" class="w-full p-2.5 rounded-xl border border-royal-gold/40 bg-white dark:bg-royal-navy text-xs font-bold">
+                                <option value="">-- حدد مصدر المعلومة --</option>
+                                <option value="correct">التحدث مع الإداريين الأطول خدمة في النادي</option>
+                                <option value="wrong1">استطلاع رأي الجماهير في وسائل التواصل</option>
+                                <option value="wrong2">قراءة المجلات الرياضية العالمية</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Info Category 3 -->
+                    <div class="p-5 rounded-2xl border-2 border-royal-gold/30 bg-gray-50 dark:bg-royal-navy/50 space-y-3">
+                        <div class="flex items-center gap-2 text-royal-gold font-bold">
+                            <i class="fa-solid fa-users text-lg"></i>
+                            <h4>3. معلومات عن: (أوضاع اللاعبين حالياً والظروف)</h4>
+                        </div>
+                        <div class="bg-white dark:bg-royal-cardDark p-3 rounded-xl text-xs leading-relaxed border border-gray-200 dark:border-gray-700">
+                            <strong>المعلومات المطلوب جمعها:</strong> ظروفهم الاجتماعية والمالية - انتماؤهم النفسي للنادي - مشكلات عقودهم واحتياجاتهم.
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-1">اختر المصدر الأكثر ملاءمة لجمع هذه المعلومات:</label>
+                            <select id="club-src-3" class="w-full p-2.5 rounded-xl border border-royal-gold/40 bg-white dark:bg-royal-navy text-xs font-bold">
+                                <option value="">-- حدد مصدر المعلومة --</option>
+                                <option value="correct">نقاشات ومقابلات مع (مدير الكرة، المدير المالي، المدير الفني، واللاعبين)</option>
+                                <option value="wrong1">مراجعة سجل الأنشطة القديمة للنادي</option>
+                                <option value="wrong2">الاطلاع على تقارير الأندية المنافسة</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Info Category 4 -->
+                    <div class="p-5 rounded-2xl border-2 border-royal-gold/30 bg-gray-50 dark:bg-royal-navy/50 space-y-3">
+                        <div class="flex items-center gap-2 text-royal-gold font-bold">
+                            <i class="fa-solid fa-dumbbell text-lg"></i>
+                            <h4>4. معلومات عن: (المستوى الفني والبدني للاعبين)</h4>
+                        </div>
+                        <div class="bg-white dark:bg-royal-cardDark p-3 rounded-xl text-xs leading-relaxed border border-gray-200 dark:border-gray-700">
+                            <strong>المعلومات المطلوب جمعها:</strong> لياقتهم البدنية - مستوى أدائهم الفني - أطولهم خبرة - أفضلهم أداءً بالملعب.
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-1">اختر المصدر الأكثر ملاءمة لجمع هذه المعلومات:</label>
+                            <select id="club-src-4" class="w-full p-2.5 rounded-xl border border-royal-gold/40 bg-white dark:bg-royal-navy text-xs font-bold">
+                                <option value="">-- حدد مصدر المعلومة --</option>
+                                <option value="correct">مشاهدة عروض التدريب والمباريات الودية والملاحظة المباشرة</option>
+                                <option value="wrong1">سؤال المؤسسين القدامى</option>
+                                <option value="wrong2">قراءة النشرات الإعلامية التاريخية</option>
+                            </select>
+                        </div>
+                    </div>
+
+                </div>
+
+                <div class="mt-6 flex justify-between items-center">
+                    <button onclick="checkSection3()" class="px-6 py-3 gold-bg-gradient text-royal-navy font-black rounded-xl shadow-lg hover:brightness-110 transition flex items-center gap-2">
+                        <i class="fa-solid fa-clipboard-check"></i> اعتماد نتائج إدارة النادي
+                    </button>
+                    <div id="section3-feedback" class="text-sm font-bold text-royal-gold"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 4: Best Sources Quiz -->
+        <section id="section4" class="tab-content hidden space-y-6">
+            <div class="bg-white dark:bg-royal-cardDark rounded-2xl p-6 shadow-xl border border-royal-gold/30">
+                <div class="border-b border-gray-200 dark:border-gray-700 pb-4 mb-6">
+                    <h2 class="text-2xl font-black text-royal-darkBlue dark:text-royal-gold flex items-center gap-2">
+                        <i class="fa-solid fa-magnifying-glass-location text-royal-gold"></i> القسم الرابع: تحديد أفضل المصادر لجمع المعلومات
+                    </h2>
+                    <p class="text-sm text-gray-600 dark:text-gray-300 mt-1">حدد أفضل المصادر الموثوقة لجمع المعلومات للسيناريوهات التالية (النشاط 5، صفحة 3).</p>
+                </div>
+
+                <div class="space-y-6">
+
+                    <!-- Scenario 1 -->
+                    <div class="p-5 rounded-2xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-royal-navy/40 space-y-3">
+                        <h3 class="font-bold text-base text-royal-darkBlue dark:text-royal-gold flex items-center gap-2">
+                            <span class="w-7 h-7 rounded-full gold-bg-gradient text-royal-navy font-bold flex items-center justify-center text-sm">1</span>
+                            تريد أن تتابع نتائج زيارة أحد السياسيين السعوديين لدولة عظمى:
+                        </h3>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                            <label class="flex items-center p-3 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-royal-cardDark cursor-pointer hover:border-royal-gold transition">
+                                <input type="radio" name="src_scen_1" value="wrong" class="ml-2 accent-royal-gold">
+                                <span class="text-xs font-semibold">حسابات التواصل الاجتماعي الشخصية غير الموثقة</span>
+                            </label>
+                            <label class="flex items-center p-3 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-royal-cardDark cursor-pointer hover:border-royal-gold transition">
+                                <input type="radio" name="src_scen_1" value="correct" class="ml-2 accent-royal-gold">
+                                <span class="text-xs font-semibold">وكالة الأنباء السعودية (واس) والصحف ووسائل الإعلام الرسمية</span>
+                            </label>
+                            <label class="flex items-center p-3 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-royal-cardDark cursor-pointer hover:border-royal-gold transition">
+                                <input type="radio" name="src_scen_1" value="wrong" class="ml-2 accent-royal-gold">
+                                <span class="text-xs font-semibold">الكتب التاريخية القديمة والروايات</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Scenario 2 -->
+                    <div class="p-5 rounded-2xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-royal-navy/40 space-y-3">
+                        <h3 class="font-bold text-base text-royal-darkBlue dark:text-royal-gold flex items-center gap-2">
+                            <span class="w-7 h-7 rounded-full gold-bg-gradient text-royal-navy font-bold flex items-center justify-center text-sm">2</span>
+                            تريد أن تنشئ محلاً كبيراً لبيع الأغذية في حي من أحياء مدينتك:
+                        </h3>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                            <label class="flex items-center p-3 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-royal-cardDark cursor-pointer hover:border-royal-gold transition">
+                                <input type="radio" name="src_scen_2" value="correct" class="ml-2 accent-royal-gold">
+                                <span class="text-xs font-semibold">الدراسات الميدانية واستطلاعات سكان الحي وملاحظة المحلات المجاورة والبلدية</span>
+                            </label>
+                            <label class="flex items-center p-3 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-royal-cardDark cursor-pointer hover:border-royal-gold transition">
+                                <input type="radio" name="src_scen_2" value="wrong" class="ml-2 accent-royal-gold">
+                                <span class="text-xs font-semibold">المذكرات الشخصية للرحالة والأدباء</span>
+                            </label>
+                            <label class="flex items-center p-3 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-royal-cardDark cursor-pointer hover:border-royal-gold transition">
+                                <input type="radio" name="src_scen_2" value="wrong" class="ml-2 accent-royal-gold">
+                                <span class="text-xs font-semibold">الصحف الرياضية والمجلات الترفيهية</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Scenario 3 -->
+                    <div class="p-5 rounded-2xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-royal-navy/40 space-y-3">
+                        <h3 class="font-bold text-base text-royal-darkBlue dark:text-royal-gold flex items-center gap-2">
+                            <span class="w-7 h-7 rounded-full gold-bg-gradient text-royal-navy font-bold flex items-center justify-center text-sm">3</span>
+                            تريد دراسة ظاهرة (البطالة) في المملكة، وآثارها النفسية والاجتماعية والاقتصادية والأمنية:
+                        </h3>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                            <label class="flex items-center p-3 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-royal-cardDark cursor-pointer hover:border-royal-gold transition">
+                                <input type="radio" name="src_scen_3" value="wrong" class="ml-2 accent-royal-gold">
+                                <span class="text-xs font-semibold">سؤال الأصدقاء والملاحظات الفردية البسيطة</span>
+                            </label>
+                            <label class="flex items-center p-3 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-royal-cardDark cursor-pointer hover:border-royal-gold transition">
+                                <input type="radio" name="src_scen_3" value="wrong" class="ml-2 accent-royal-gold">
+                                <span class="text-xs font-semibold">المجلات الفنية والدعايات التلفزيونية</span>
+                            </label>
+                            <label class="flex items-center p-3 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-royal-cardDark cursor-pointer hover:border-royal-gold transition">
+                                <input type="radio" name="src_scen_3" value="correct" class="ml-2 accent-royal-gold">
+                                <span class="text-xs font-semibold">التقارير والإحصاءات الرسمية لوزارة الموارد البشرية والهيئة العامة للإحصاء والكتب المتخصصة</span>
+                            </label>
+                        </div>
+                    </div>
+
+                </div>
+
+                <div class="mt-6 flex justify-between items-center">
+                    <button onclick="checkSection4()" class="px-6 py-3 gold-bg-gradient text-royal-navy font-black rounded-xl shadow-lg hover:brightness-110 transition flex items-center gap-2">
+                        <i class="fa-solid fa-list-check"></i> تصحيح اختيار المصادر
+                    </button>
+                    <div id="section4-feedback" class="text-sm font-bold text-royal-gold"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 5: Canteen Report Generator -->
+        <section id="section5" class="tab-content hidden space-y-6">
+            <div class="bg-white dark:bg-royal-cardDark rounded-2xl p-6 shadow-xl border border-royal-gold/30">
+                <div class="border-b border-gray-200 dark:border-gray-700 pb-4 mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                    <div>
+                        <h2 class="text-2xl font-black text-royal-darkBlue dark:text-royal-gold flex items-center gap-2">
+                            <i class="fa-solid fa-file-signature text-royal-gold"></i> القسم الخامس: منشئ ومولّد تقرير المقصف المدرسي التفاعلي
+                        </h2>
+                        <p class="text-sm text-gray-600 dark:text-gray-300 mt-1">قم بتعبئة التقرير أو اختيار القوالب الجاهزة المساعدة لتجهيز تقرير متكامل لمدير/مديرة المدرسة.</p>
+                    </div>
+                    <div class="flex gap-2">
+                        <button onclick="fillCanteenTemplate()" class="px-3 py-2 bg-royal-darkBlue text-royal-gold border border-royal-gold/40 text-xs font-bold rounded-xl hover:bg-royal-navy transition">
+                            <i class="fa-solid fa-wand-magic-sparkles ml-1"></i> تعبئة نموذج إرشادي
+                        </button>
+                        <button onclick="printReport()" class="px-4 py-2 gold-bg-gradient text-royal-navy font-black text-xs rounded-xl shadow hover:brightness-110 transition">
+                            <i class="fa-solid fa-print ml-1"></i> طباعة / تصدير التقرير
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Report Form -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-xs font-bold text-gray-600 dark:text-gray-300 mb-1">اسم مديرة المدرسة / الموجه له التقرير:</label>
+                            <input type="text" id="report-to" value="مديرة المدرسة المحترمة" class="w-full p-2.5 rounded-xl border border-royal-gold/40 bg-gray-50 dark:bg-royal-navy text-sm font-semibold">
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-bold text-gray-600 dark:text-gray-300 mb-1">عنوان التقرير الفرعي 1: (الأغذية والوجبات المقدمة):</label>
+                            <textarea id="report-sec1" rows="3" class="w-full p-2.5 rounded-xl border border-royal-gold/40 bg-gray-50 dark:bg-royal-navy text-sm" placeholder="اكتبي ملاحظات جودة الطعام وتنوعه والأسعار..."></textarea>
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-bold text-gray-600 dark:text-gray-300 mb-1">عنوان التقرير الفرعي 2: (النظافة والتنظيم والتنظيم البيئي):</label>
+                            <textarea id="report-sec2" rows="3" class="w-full p-2.5 rounded-xl border border-royal-gold/40 bg-gray-50 dark:bg-royal-navy text-sm" placeholder="اكتبي ملاحظات عن مستوى النظافة والازدحام والتنظيم..."></textarea>
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-bold text-gray-600 dark:text-gray-300 mb-1">التوصيات والمقترحات للتحسين:</label>
+                            <textarea id="report-recs" rows="3" class="w-full p-2.5 rounded-xl border border-royal-gold/40 bg-gray-50 dark:bg-royal-navy text-sm" placeholder="التوصيات المقترحة لتطوير المقصف..."></textarea>
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-bold text-gray-600 dark:text-gray-300 mb-1">مصادر جمع المعلومات المعتمدة:</label>
+                            <input type="text" id="report-sources" placeholder="مثال: الملاحظة المباشرة، استطلاع آراء الطالبات، الاستبيان..." class="w-full p-2.5 rounded-xl border border-royal-gold/40 bg-gray-50 dark:bg-royal-navy text-sm font-semibold">
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-bold text-gray-600 dark:text-gray-300 mb-1">اسم معدة التقرير (الطالبة):</label>
+                            <input type="text" id="report-author" placeholder="اكتبي اسمكِ هنا" class="w-full p-2.5 rounded-xl border border-royal-gold/40 bg-gray-50 dark:bg-royal-navy text-sm font-semibold">
+                        </div>
+                    </div>
+
+                    <!-- Live Report Preview (Printable Zone) -->
+                    <div id="printable-report" class="p-6 rounded-2xl border-2 border-royal-gold bg-white text-gray-900 shadow-xl space-y-4 font-tajawal">
+                        <div class="text-center border-b-2 border-royal-gold/40 pb-4">
+                            <h4 class="text-xs font-bold text-gray-500">المملكة العربية السعودية | وزارة التعليم</h4>
+                            <h4 class="text-xs font-bold text-gray-500">المدرسة: الثانوية التاسعة والعشرون</h4>
+                            <h3 class="text-xl font-black text-royal-darkBlue mt-2">تقرير شافي عن المقصف المدرسي</h3>
+                            <p class="text-xs font-semibold text-royal-gold">إشراف المعلمة: حسنه العلوي</p>
+                        </div>
+
+                        <div class="text-xs font-bold text-gray-700">
+                            مقدم إلى: <span id="prev-to" class="font-black text-royal-navy">مديرة المدرسة المحترمة</span>
+                        </div>
+
+                        <div class="space-y-3 text-xs leading-relaxed text-gray-800">
+                            <div>
+                                <h5 class="font-bold text-royal-darkBlue border-r-4 border-royal-gold pr-2 py-0.5 bg-gray-50">أولاً: جودة الأغذية والوجبات المقدمة:</h5>
+                                <p id="prev-sec1" class="mt-1 text-gray-600">لم يتم إدخال بيانات بعد.</p>
+                            </div>
+                            <div>
+                                <h5 class="font-bold text-royal-darkBlue border-r-4 border-royal-gold pr-2 py-0.5 bg-gray-50">ثانياً: البيئة والتنظيم والنظافة العامة:</h5>
+                                <p id="prev-sec2" class="mt-1 text-gray-600">لم يتم إدخال بيانات بعد.</p>
+                            </div>
+                            <div>
+                                <h5 class="font-bold text-royal-darkBlue border-r-4 border-royal-gold pr-2 py-0.5 bg-gray-50">ثالثاً: التوصيات والمقترحات:</h5>
+                                <p id="prev-recs" class="mt-1 text-gray-600">لم يتم إدخال بيانات بعد.</p>
+                            </div>
+                            <div>
+                                <h5 class="font-bold text-royal-darkBlue border-r-4 border-royal-gold pr-2 py-0.5 bg-gray-50">رابعاً: مصادر جمع المعلومات:</h5>
+                                <p id="prev-sources" class="mt-1 text-gray-600">لم يتم إدخال بيانات بعد.</p>
+                            </div>
+                        </div>
+
+                        <div class="pt-6 border-t border-gray-300 flex justify-between items-end text-xs font-bold">
+                            <div>
+                                <p>معدة التقرير: <span id="prev-author" class="text-royal-darkBlue">.................</span></p>
+                                <p class="text-gray-400 font-normal">التاريخ: <span id="report-date"></span></p>
+                            </div>
+                            <div class="text-left">
+                                <p class="text-royal-gold">أستاذة المادة: حسنه العلوي</p>
+                                <p class="text-gray-400">التوقيع: ....................</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 6: Topic Construction Steps Interactive Guide -->
+        <section id="section6" class="tab-content hidden space-y-6">
+            <div class="bg-white dark:bg-royal-cardDark rounded-2xl p-6 shadow-xl border border-royal-gold/30">
+                <div class="border-b border-gray-200 dark:border-gray-700 pb-4 mb-6">
+                    <h2 class="text-2xl font-black text-royal-darkBlue dark:text-royal-gold flex items-center gap-2">
+                        <i class="fa-solid fa-list-ol text-royal-gold"></i> القسم السادس: الدليل التفاعلي لخطوات بناء الموضوع
+                    </h2>
+                    <p class="text-sm text-gray-600 dark:text-gray-300 mt-1">تتبعي خطة بناء الموضوع السبعة من مرحلة الاختيار إلى كتابة المبيضة النهائية (الصفحة 4 من الدرس).</p>
+                </div>
+
+                <!-- Interactive Steps Timeline -->
+                <div class="grid grid-cols-1 md:grid-cols-7 gap-2 mb-8">
+                    <button onclick="showStep(1)" id="step-btn-1" class="step-nav-btn p-3 rounded-xl border border-royal-gold/30 bg-royal-gold text-royal-navy font-bold text-xs flex flex-col items-center gap-1 shadow">
+                        <span class="w-6 h-6 rounded-full bg-royal-navy text-white flex items-center justify-center font-black">1</span>
+                        اختيار الموضوع
+                    </button>
+                    <button onclick="showStep(2)" id="step-btn-2" class="step-nav-btn p-3 rounded-xl border border-royal-gold/30 bg-gray-100 dark:bg-royal-navy text-gray-700 dark:text-gray-300 font-bold text-xs flex flex-col items-center gap-1">
+                        <span class="w-6 h-6 rounded-full bg-royal-gold text-royal-navy flex items-center justify-center font-black">2</span>
+                        تحديد الهدف
+                    </button>
+                    <button onclick="showStep(3)" id="step-btn-3" class="step-nav-btn p-3 rounded-xl border border-royal-gold/30 bg-gray-100 dark:bg-royal-navy text-gray-700 dark:text-gray-300 font-bold text-xs flex flex-col items-center gap-1">
+                        <span class="w-6 h-6 rounded-full bg-royal-gold text-royal-navy flex items-center justify-center font-black">3</span>
+                        جمع المعلومات
+                    </button>
+                    <button onclick="showStep(4)" id="step-btn-4" class="step-nav-btn p-3 rounded-xl border border-royal-gold/30 bg-gray-100 dark:bg-royal-navy text-gray-700 dark:text-gray-300 font-bold text-xs flex flex-col items-center gap-1">
+                        <span class="w-6 h-6 rounded-full bg-royal-gold text-royal-navy flex items-center justify-center font-black">4</span>
+                        تخطيط الموضوع
+                    </button>
+                    <button onclick="showStep(5)" id="step-btn-5" class="step-nav-btn p-3 rounded-xl border border-royal-gold/30 bg-gray-100 dark:bg-royal-navy text-gray-700 dark:text-gray-300 font-bold text-xs flex flex-col items-center gap-1">
+                        <span class="w-6 h-6 rounded-full bg-royal-gold text-royal-navy flex items-center justify-center font-black">5</span>
+                        الكتابة الأولى
+                    </button>
+                    <button onclick="showStep(6)" id="step-btn-6" class="step-nav-btn p-3 rounded-xl border border-royal-gold/30 bg-gray-100 dark:bg-royal-navy text-gray-700 dark:text-gray-300 font-bold text-xs flex flex-col items-center gap-1">
+                        <span class="w-6 h-6 rounded-full bg-royal-gold text-royal-navy flex items-center justify-center font-black">6</span>
+                        المراجعة
+                    </button>
+                    <button onclick="showStep(7)" id="step-btn-7" class="step-nav-btn p-3 rounded-xl border border-royal-gold/30 bg-gray-100 dark:bg-royal-navy text-gray-700 dark:text-gray-300 font-bold text-xs flex flex-col items-center gap-1">
+                        <span class="w-6 h-6 rounded-full bg-royal-gold text-royal-navy flex items-center justify-center font-black">7</span>
+                        الكتابة النهائية
+                    </button>
+                </div>
+
+                <!-- Step Dynamic Details -->
+                <div id="step-details-card" class="p-6 rounded-2xl bg-gray-50 dark:bg-royal-navy/60 border-2 border-royal-gold/40 shadow-inner space-y-4">
+                    <!-- Populated dynamically via JavaScript -->
+                </div>
+
+                <!-- Interactive Topic Plan Designer -->
+                <div class="mt-8 border-t border-gray-200 dark:border-gray-700 pt-6">
+                    <h3 class="text-lg font-black text-royal-darkBlue dark:text-royal-gold mb-3 flex items-center gap-2">
+                        <i class="fa-solid fa-diagram-project text-royal-gold"></i> مصمم المخطط الهيكلي للموضوع (تفاعلي)
+                    </h3>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <input type="text" id="plan-title" placeholder="عنوان الموضوع الرئيسي..." class="p-3 rounded-xl border border-royal-gold/40 bg-white dark:bg-royal-navy text-xs font-bold">
+                        <input type="text" id="plan-idea1" placeholder="الفكرة الرئيسة الأولى..." class="p-3 rounded-xl border border-royal-gold/40 bg-white dark:bg-royal-navy text-xs">
+                        <input type="text" id="plan-idea2" placeholder="الفكرة الرئيسة الثانية..." class="p-3 rounded-xl border border-royal-gold/40 bg-white dark:bg-royal-navy text-xs">
+                    </div>
+                    <button onclick="generateTreePlan()" class="mt-3 px-5 py-2.5 gold-bg-gradient text-royal-navy font-black text-xs rounded-xl shadow hover:brightness-110 transition">
+                        <i class="fa-solid fa-network-wired ml-1"></i> توليد شجرة مخطط الموضوع
+                    </button>
+                    <div id="tree-container" class="mt-4 p-4 rounded-xl bg-white dark:bg-royal-navy border border-royal-gold/30 min-h-[80px] hidden">
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- SECTION: Badges & Gamification Showcase -->
+        <section id="badges" class="tab-content hidden space-y-6">
+            <div class="bg-white dark:bg-royal-cardDark rounded-2xl p-6 shadow-xl border border-royal-gold/30">
+                <div class="border-b border-gray-200 dark:border-gray-700 pb-4 mb-6 text-center">
+                    <h2 class="text-3xl font-black text-royal-darkBlue dark:text-royal-gold">
+                        <i class="fa-solid fa-award text-royal-gold"></i> أوسمة وشارات الإنجاز والتميز
+                    </h2>
+                    <p class="text-sm text-gray-600 dark:text-gray-300 mt-1">أكملي الأنشطة والتدريبات الميدانية في الكفاية اللغوية لفتح جميع الأوسمة الملكية التالية!</p>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <!-- Badge 1 -->
+                    <div id="badge-card-1" class="p-5 rounded-2xl border-2 border-gray-300 dark:border-gray-700 bg-gray-100 dark:bg-royal-navy/40 text-center space-y-3 opacity-50 transition-all">
+                        <div class="w-16 h-16 mx-auto rounded-full bg-gray-300 dark:bg-gray-700 flex items-center justify-center text-3xl text-gray-500 badge-icon">
+                            <i class="fa-solid fa-feather"></i>
+                        </div>
+                        <h3 class="font-bold text-base text-gray-800 dark:text-gray-200">وسام كاتبة المستقبل</h3>
+                        <p class="text-xs text-gray-500 dark:text-gray-400">يُمنح عند إكمال ربط الفنون التعبيرية بالموضوعات في القسم الأول.</p>
+                        <span class="badge-status text-xs font-bold text-gray-400 bg-gray-200 dark:bg-gray-800 px-3 py-1 rounded-full inline-block">مغلق</span>
+                    </div>
+
+                    <!-- Badge 2 -->
+                    <div id="badge-card-2" class="p-5 rounded-2xl border-2 border-gray-300 dark:border-gray-700 bg-gray-100 dark:bg-royal-navy/40 text-center space-y-3 opacity-50 transition-all">
+                        <div class="w-16 h-16 mx-auto rounded-full bg-gray-300 dark:bg-gray-700 flex items-center justify-center text-3xl text-gray-500 badge-icon">
+                            <i class="fa-solid fa-bullseye"></i>
+                        </div>
+                        <h3 class="font-bold text-base text-gray-800 dark:text-gray-200">وسام محللة الأهداف</h3>
+                        <p class="text-xs text-gray-500 dark:text-gray-400">يُمنح عند إتقان تحليل أهداف الكتابة والتصنيف الأدبي والعلمي.</p>
+                        <span class="badge-status text-xs font-bold text-gray-400 bg-gray-200 dark:bg-gray-800 px-3 py-1 rounded-full inline-block">مغلق</span>
+                    </div>
+
+                    <!-- Badge 3 -->
+                    <div id="badge-card-3" class="p-5 rounded-2xl border-2 border-gray-300 dark:border-gray-700 bg-gray-100 dark:bg-royal-navy/40 text-center space-y-3 opacity-50 transition-all">
+                        <div class="w-16 h-16 mx-auto rounded-full bg-gray-300 dark:bg-gray-700 flex items-center justify-center text-3xl text-gray-500 badge-icon">
+                            <i class="fa-solid fa-briefcase"></i>
+                        </div>
+                        <h3 class="font-bold text-base text-gray-800 dark:text-gray-200">وسام مديرة المحتوى</h3>
+                        <p class="text-xs text-gray-500 dark:text-gray-400">يُمنح عند نجاحك في محاكي الجمع والتصنيف في لعبة مدير النادي.</p>
+                        <span class="badge-status text-xs font-bold text-gray-400 bg-gray-200 dark:bg-gray-800 px-3 py-1 rounded-full inline-block">مغلق</span>
+                    </div>
+
+                    <!-- Badge 4 -->
+                    <div id="badge-card-4" class="p-5 rounded-2xl border-2 border-gray-300 dark:border-gray-700 bg-gray-100 dark:bg-royal-navy/40 text-center space-y-3 opacity-50 transition-all">
+                        <div class="w-16 h-16 mx-auto rounded-full bg-gray-300 dark:bg-gray-700 flex items-center justify-center text-3xl text-gray-500 badge-icon">
+                            <i class="fa-solid fa-crown"></i>
+                        </div>
+                        <h3 class="font-bold text-base text-gray-800 dark:text-gray-200">وسام خبيرة التخطيط</h3>
+                        <p class="text-xs text-gray-500 dark:text-gray-400">يُمنح عند توليد تقرير المقصف ومراجعة خطوات بناء الموضوع كاملة.</p>
+                        <span class="badge-status text-xs font-bold text-gray-400 bg-gray-200 dark:bg-gray-800 px-3 py-1 rounded-full inline-block">مغلق</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-royal-navy text-white border-t border-royal-gold/30 py-6 mt-12 no-print">
+        <div class="max-w-7xl mx-auto px-4 text-center space-y-2">
+            <p class="text-sm font-bold text-royal-gold">منصة الكفايات اللغوية التفاعلية - وحدة مهارات التعبير والكتابة</p>
+            <p class="text-xs text-gray-400">إعداد وتصميم المعلمة: <strong class="text-white">حسنه العلوي</strong> | الثانوية التاسعة والعشرون</p>
+        </div>
+    </footer>
+
+    <!-- JavaScript App Logic -->
+    <script>
+        // Global State & Progress Trackers
+        let totalScore = 0;
+        let completedSections = {
+            section1: false,
+            section2: false,
+            section3: false,
+            section4: false,
+            section5: false,
+            section6: false
+        };
+
+        // Theme Toggle Logic
+        const themeToggleBtn = document.getElementById('theme-toggle');
+        const themeIcon = document.getElementById('theme-icon');
+
+        themeToggleBtn.addEventListener('click', () => {
+            if (document.documentElement.classList.contains('dark')) {
+                document.documentElement.classList.remove('dark');
+                themeIcon.className = 'fa-solid fa-moon text-lg';
+            } else {
+                document.documentElement.classList.add('dark');
+                themeIcon.className = 'fa-solid fa-sun text-lg text-royal-gold';
+            }
+        });
+
+        // Set default dark mode
+        document.documentElement.classList.add('dark');
+        themeIcon.className = 'fa-solid fa-sun text-lg text-royal-gold';
+
+        // Tab Navigation Logic
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('bg-royal-gold', 'text-royal-navy', 'shadow-md');
+                btn.classList.add('hover:bg-white/10');
+            });
+
+            document.getElementById(tabId).classList.remove('hidden');
+            const activeBtn = document.getElementById(`tab-${tabId}`);
+            if (activeBtn) {
+                activeBtn.classList.add('bg-royal-gold', 'text-royal-navy', 'shadow-md');
+                activeBtn.classList.remove('hover:bg-white/10');
+            }
+        }
+
+        // Gamification Core Helpers
+        function addScore(points) {
+            totalScore += points;
+            document.getElementById('score-counter').innerText = totalScore;
+            confetti({
+                particleCount: 40,
+                spread: 60,
+                origin: { y: 0.8 }
+            });
+        }
+
+        function updateOverallProgress() {
+            const completedCount = Object.values(completedSections).filter(Boolean).length;
+            const percentage = Math.round((completedCount / 6) * 100);
+            document.getElementById('overall-progress').style.width = `${percentage}%`;
+            document.getElementById('progress-percentage').innerText = `${percentage}%`;
+        }
+
+        function unlockBadge(badgeNum) {
+            const badgeCard = document.getElementById(`badge-card-${badgeNum}`);
+            if (badgeCard && badgeCard.classList.contains('opacity-50')) {
+                badgeCard.classList.remove('opacity-50', 'bg-gray-100', 'dark:bg-royal-navy/40');
+                badgeCard.classList.add('bg-white', 'dark:bg-royal-cardDark', 'border-royal-gold', 'shadow-xl', 'scale-105');
+                
+                const iconContainer = badgeCard.querySelector('.badge-icon');
+                iconContainer.classList.remove('bg-gray-300', 'dark:bg-gray-700', 'text-gray-500');
+                iconContainer.classList.add('gold-bg-gradient', 'text-royal-navy');
+
+                const statusSpan = badgeCard.querySelector('.badge-status');
+                statusSpan.innerText = 'مكتمل ومُمنوح ✓';
+                statusSpan.className = 'badge-status text-xs font-bold text-royal-navy gold-bg-gradient px-3 py-1 rounded-full inline-block shadow';
+            }
+        }
+
+        // SECTION 1: Drag & Drop Logic
+        function allowDrop(ev) {
+            ev.preventDefault();
+            ev.currentTarget.classList.add('drag-over');
+        }
+
+        function drag(ev) {
+            ev.dataTransfer.setData("text", ev.target.id);
+        }
+
+        function drop(ev, targetArtId) {
+            ev.preventDefault();
+            ev.currentTarget.classList.remove('drag-over');
+            const data = ev.dataTransfer.getData("text");
+            const draggedEl = document.getElementById(data);
+
+            if (draggedEl) {
+                // Clear previous text placeholder
+                const placeholder = ev.currentTarget.querySelector('span');
+                if (placeholder) placeholder.style.display = 'none';
+
+                // Append item
+                ev.currentTarget.appendChild(draggedEl);
+                ev.currentTarget.dataset.assignedArt = data;
+                ev.currentTarget.dataset.targetArt = targetArtId;
+            }
+        }
+
+        function checkSection1() {
+            const zones = document.querySelectorAll('#section1 .drop-zone');
+            let correctCount = 0;
+
+            zones.forEach(zone => {
+                if (zone.dataset.assignedArt && zone.dataset.assignedArt === zone.dataset.targetArt) {
+                    correctCount++;
+                    zone.classList.add('border-green-500', 'bg-green-500/10');
+                } else if (zone.dataset.assignedArt) {
+                    zone.classList.add('border-red-500', 'bg-red-500/10');
+                }
+            });
+
+            const feedback = document.getElementById('section1-feedback');
+            if (correctCount === 5) {
+                feedback.innerText = 'ممتازة! إجابة كاملة وصحيحة (5/5) 🎉';
+                feedback.className = 'text-sm font-bold text-green-500';
+                if (!completedSections.section1) {
+                    completedSections.section1 = true;
+                    addScore(25);
+                    unlockBadge(1);
+                    updateOverallProgress();
+                }
+            } else {
+                feedback.innerText = `تم مطابقة ${correctCount} من 5 بصورة صحيحة. حاولي تعديل البطاقات المتبقية.`;
+                feedback.className = 'text-sm font-bold text-royal-gold';
+            }
+        }
+
+        function resetSection1() {
+            const sourceContainer = document.getElementById('arts-source');
+            const items = document.querySelectorAll('.draggable-item');
+            items.forEach(item => sourceContainer.appendChild(item));
+
+            const zones = document.querySelectorAll('#section1 .drop-zone');
+            zones.forEach(zone => {
+                zone.classList.remove('border-green-500', 'bg-green-500/10', 'border-red-500', 'bg-red-500/10');
+                delete zone.dataset.assignedArt;
+                const placeholder = zone.querySelector('span');
+                if (placeholder) placeholder.style.display = 'block';
+            });
+            document.getElementById('section1-feedback').innerText = '';
+        }
+
+        // SECTION 2: Goals Matrix Check
+        function checkSection2() {
+            let correct = 0;
+            for (let i = 1; i <= 5; i++) {
+                const goal = document.getElementById(`sec2-goal-${i}`).value;
+                const type = document.getElementById(`sec2-type-${i}`).value;
+                if (goal === 'right' && type === 'right') {
+                    correct++;
+                }
+            }
+
+            const feedback = document.getElementById('section2-feedback');
+            if (correct === 5) {
+                feedback.innerText = 'أحسنتِ! تم اختيار كافة أهداف الكتابة والتصنيفات بدقة متناهية (5/5) 🌟';
+                feedback.className = 'text-sm font-bold text-green-500';
+                if (!completedSections.section2) {
+                    completedSections.section2 = true;
+                    addScore(25);
+                    unlockBadge(2);
+                    updateOverallProgress();
+                }
+            } else {
+                feedback.innerText = `تم تحديد ${correct} من 5 موضوعات بشكل صحيح. راجعي الاختيارات.`;
+                feedback.className = 'text-sm font-bold text-royal-gold';
+            }
+        }
+
+        // SECTION 3: Club Manager Check
+        function checkSection3() {
+            let correct = 0;
+            for (let i = 1; i <= 4; i++) {
+                const val = document.getElementById(`club-src-${i}`).value;
+                if (val === 'correct') correct++;
+            }
+
+            const feedback = document.getElementById('section3-feedback');
+            if (correct === 4) {
+                feedback.innerText = 'رائعة جداً! نجحتِ كمديرة محترفة للنادي في ربط المعلومات بأسلوب علمي ومصادر موثوقة (4/4) ⚽🏆';
+                feedback.className = 'text-sm font-bold text-green-500';
+                if (!completedSections.section3) {
+                    completedSections.section3 = true;
+                    addScore(25);
+                    unlockBadge(3);
+                    updateOverallProgress();
+                }
+            } else {
+                feedback.innerText = `تمت مطابقة ${correct} من 4 مصادر بنجاح. حاول مراجعة الخيارات.`;
+                feedback.className = 'text-sm font-bold text-royal-gold';
+            }
+        }
+
+        // SECTION 4: Quiz Check
+        function checkSection4() {
+            let correct = 0;
+            const q1 = document.querySelector('input[name="src_scen_1"]:checked');
+            const q2 = document.querySelector('input[name="src_scen_2"]:checked');
+            const q3 = document.querySelector('input[name="src_scen_3"]:checked');
+
+            if (q1 && q1.value === 'correct') correct++;
+            if (q2 && q2.value === 'correct') correct++;
+            if (q3 && q3.value === 'correct') correct++;
+
+            const feedback = document.getElementById('section4-feedback');
+            if (correct === 3) {
+                feedback.innerText = 'إجابات نموذجية وممتازة كباحثة ومحاطة بالمصادر الأكثر موثوقية (3/3) 🎯';
+                feedback.className = 'text-sm font-bold text-green-500';
+                if (!completedSections.section4) {
+                    completedSections.section4 = true;
+                    addScore(20);
+                    updateOverallProgress();
+                }
+            } else {
+                feedback.innerText = `تمت الإجابة الصحيحة على ${correct} من 3 سيناريوهات.`;
+                feedback.className = 'text-sm font-bold text-royal-gold';
+            }
+        }
+
+        // SECTION 5: Canteen Report Dynamic Bind & Template
+        function syncReportPreview() {
+            document.getElementById('prev-to').innerText = document.getElementById('report-to').value || 'مديرة المدرسة المحترمة';
+            document.getElementById('prev-sec1').innerText = document.getElementById('report-sec1').value || 'لم يتم إدخال بيانات بعد.';
+            document.getElementById('prev-sec2').innerText = document.getElementById('report-sec2').value || 'لم يتم إدخال بيانات بعد.';
+            document.getElementById('prev-recs').innerText = document.getElementById('report-recs').value || 'لم يتم إدخال بيانات بعد.';
+            document.getElementById('prev-sources').innerText = document.getElementById('report-sources').value || 'لم يتم إدخال بيانات بعد.';
+            document.getElementById('prev-author').innerText = document.getElementById('report-author').value || '.................';
+        }
+
+        ['report-to', 'report-sec1', 'report-sec2', 'report-recs', 'report-sources', 'report-author'].forEach(id => {
+            document.getElementById(id).addEventListener('input', syncReportPreview);
+        });
+
+        function fillCanteenTemplate() {
+            document.getElementById('report-to').value = 'مديرة المدرسة المحترمة (الثانوية التاسعة والعشرون)';
+            document.getElementById('report-sec1').value = 'لوحظ تنوع جيد في الفطائر والعصائر الطازجة، مع الحاجة لزيادة خيارات الفواكه والأغذية الصحية خفيفة السكر.';
+            document.getElementById('report-sec2').value = 'النظافة العامة متوفرة وممتازة من قبل العاملات، ولكن يوجد ازدحام كبير في الطابور عند شباك البيع أثناء الاستراحة.';
+            document.getElementById('report-recs').value = '1. إضافة نقاط بيع إضافية للحد من الازدحام.\n2. إدراج خيارات غذائية صحية جديدة كالسلطات والتمر.';
+            document.getElementById('report-sources').value = 'الملاحظة المباشرة، الاستبيان الميداني لطالبات المدرسة، ومقابلة مسؤولة المقصف.';
+            document.getElementById('report-author').value = 'طالبة متميزة في الكفايات اللغوية';
+            syncReportPreview();
+
+            if (!completedSections.section5) {
+                completedSections.section5 = true;
+                addScore(20);
+                unlockBadge(4);
+                updateOverallProgress();
+            }
+        }
+
+        function printReport() {
+            syncReportPreview();
+            window.print();
+        }
+
+        // Set Current Date in Report
+        document.getElementById('report-date').innerText = new Date().toLocaleDateString('ar-SA');
+
+        // SECTION 6: Steps Guide Dynamic Info
+        const stepsData = {
+            1: {
+                title: "1. اختيار الموضوع",
+                icon: "fa-compass",
+                desc: "تحديد الفكرة أو القضية المراد الكتابة فيها بناءً على معايير محددة.",
+                details: "شروط اختيار الموضوع الناجح:\n• أن تكون معلوماتك عنه جيدة وموفورة.\n• أن يمثل جزءاً من اهتماماتك الشغوفة.\n• أن يهم القراء والمستهدفين بالدرجة الأولى.\n• أن يكون لديك إضافة جديدة جيدة ومبتكرة حوله."
+            },
+            2: {
+                title: "2. تحديد الهدف",
+                icon: "fa-bullseye",
+                desc: "معرفة الغاية الأساسية التي تسعى للوصول إليها من الكتابة.",
+                details: "أهداف الكتابة تتراوح بين:\n• التعبير عن الذات: (عاطفة، رأي شخصي، ذكريات).\n• إنشاء علاقات اجتماعية: (الاهتمام، التقدير، الشكر).\n• معالجة معلومات: (إضافة، تلخيص، توضيح، إعادة تنظيم وتصنيف)."
+            },
+            3: {
+                title: "3. جمع المعلومات وتصنيفها",
+                icon: "fa-database",
+                desc: "استقاء المادة العلمية والأدبية من مصادرها المناسبة وترتيبها.",
+                details: "مصادر جمع المعلومات:\nالكتب، الصحف، المجلات، الشبكة العنكبوتية (الإنترنت)، المقابلات الشخصية، أو الخبرة والتجربة الذاتية.\nالتصنيف: يتم في أبواب أو فصول أو أفكار رئيسة وفرعية."
+            },
+            4: {
+                title: "4. تخطيط الموضوع",
+                icon: "fa-sitemap",
+                desc: "تصميم هيكل وشجرة المخطط التنظيمي للأفكار والعناوين.",
+                details: "تشمل هذه المرحلة رسم مخطط الموضوع (الهيكل العظمي للمشروع) الذي يحدد المقدمة، والعناوين الجانبية، والتسلسل المنطقي للأفكار، والخاتمة والتوصيات."
+            },
+            5: {
+                title: "5. الكتابة الأولى (المسودة)",
+                icon: "fa-pen-ruler",
+                desc: "البدء في صياغة الموضوع وتركيز الأفكار بحرية.",
+                details: "في هذه المرحلة:\nيتم التركيز الكامل على عرض المعلومات واستيفائها وتدفّق الأفكار، دون التوقف الكثيراً عند التدقيق اللغوي الدقيق في أول الأمر."
+            },
+            6: {
+                title: "6. المراجعة",
+                icon: "fa-glasses",
+                desc: "فحص المسودة وتدقيقها لغوياً وفكرياً وبلاغياً.",
+                details: "معايير المراجعة:\n• التأكد من صحة اللغة والإملاء.\n• مراجعة علامات الترقيم والفقرات.\n• التأكد من منطقية تسلسل الأفكار وجمال الأسلوب وقوة التأثير والإقناع."
+            },
+            7: {
+                title: "7. الكتابة النهائية (المبيضة)",
+                icon: "fa-file-circle-check",
+                desc: "إخراج النص في صورته النهائية الأنيقة المكتملة.",
+                details: "تشمل:\nكتابة المبيضة النهائية، والاهتمام الفائق بجودة الإخراج، تناسق الهوامش، الخط الواضح، والجاهزية للطباعة أو النشر."
+            }
+        };
+
+        function showStep(stepNum) {
+            document.querySelectorAll('.step-nav-btn').forEach(btn => {
+                btn.classList.remove('bg-royal-gold', 'text-royal-navy');
+                btn.classList.add('bg-gray-100', 'dark:bg-royal-navy', 'text-gray-700', 'dark:text-gray-300');
+            });
+
+            const activeBtn = document.getElementById(`step-btn-${stepNum}`);
+            if (activeBtn) {
+                activeBtn.classList.add('bg-royal-gold', 'text-royal-navy');
+                activeBtn.classList.remove('bg-gray-100', 'dark:bg-royal-navy', 'text-gray-700', 'dark:text-gray-300');
+            }
+
+            const data = stepsData[stepNum];
+            const card = document.getElementById('step-details-card');
+            card.innerHTML = `
+                <div class="flex items-center gap-3">
+                    <div class="w-12 h-12 rounded-full gold-bg-gradient text-royal-navy flex items-center justify-center text-xl font-bold">
+                        <i class="fa-solid ${data.icon}"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-black text-royal-darkBlue dark:text-royal-gold">${data.title}</h3>
+                        <p class="text-xs font-semibold text-gray-500 dark:text-gray-400">${data.desc}</p>
+                    </div>
+                </div>
+                <div class="bg-white dark:bg-royal-navy p-4 rounded-xl border border-royal-gold/30 text-xs sm:text-sm leading-relaxed whitespace-pre-line font-medium">
+                    ${data.details}
+                </div>
+            `;
+
+            if (stepNum === 7 && !completedSections.section6) {
+                completedSections.section6 = true;
+                addScore(25);
+                updateOverallProgress();
+            }
+        }
+
+        // Initialize First Step Display
+        showStep(1);
+
+        // Topic Tree Planner Builder
+        function generateTreePlan() {
+            const title = document.getElementById('plan-title').value || 'عنوان الموضوع';
+            const idea1 = document.getElementById('plan-idea1').value || 'الفكرة الرئيسية الأولى';
+            const idea2 = document.getElementById('plan-idea2').value || 'الفكرة الرئيسية الثانية';
+
+            const container = document.getElementById('tree-container');
+            container.classList.remove('hidden');
+            container.innerHTML = `
+                <div class="flex flex-col items-center space-y-4">
+                    <div class="px-6 py-2.5 gold-bg-gradient text-royal-navy font-black text-sm rounded-xl shadow-lg border border-white">
+                        <i class="fa-solid fa-folder-open ml-1"></i> ${title}
+                    </div>
+                    <div class="w-0.5 h-6 bg-royal-gold"></div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 w-full">
+                        <div class="p-3 bg-gray-50 dark:bg-royal-cardDark rounded-xl border border-royal-gold/40 text-center">
+                            <span class="text-xs font-bold text-royal-gold block mb-1">الفكرة الفرعية 1</span>
+                            <span class="text-xs font-semibold">${idea1}</span>
+                        </div>
+                        <div class="p-3 bg-gray-50 dark:bg-royal-cardDark rounded-xl border border-royal-gold/40 text-center">
+                            <span class="text-xs font-bold text-royal-gold block mb-1">الفكرة الفرعية 2</span>
+                            <span class="text-xs font-semibold">${idea2}</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+    </script>
+</body>
+</html>
